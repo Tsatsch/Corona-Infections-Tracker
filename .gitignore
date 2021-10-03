@@ -1,2 +1,5 @@
 docker-compose.yml
 .idea/
+tester.py
+resources/rki_report.xlsx
+helpers/__pycache__/
