@@ -38,17 +38,17 @@ def get_incidence_diff(name, data):
     if len(data.keys()) == 16:
         for key, value in data.items():
             if key.lower() == name.lower():
-                url = base_url + f'/states/{data[key][0]}/history/incidence/2'
+                url = base_url + f'/states/{data[key][0]}/history/incidence'
                 response = requests.request("GET", url).json()
-                incidence = response['data'][data[key][0]]['history'][1]['weekIncidence'] - \
-                            response['data'][data[key][0]]['history'][0]['weekIncidence']
+                incidence = response['data'][data[key][0]]['history'][-1]['weekIncidence'] - \
+                            response['data'][data[key][0]]['history'][-2]['weekIncidence']
     else:
         for key, value in data.items():
             if key.lower() == name.lower():
-                url = base_url + f'/districts/{data[key][0]}/history/incidence/2'
+                url = base_url + f'/districts/{data[key][0]}/history/incidence'
                 response = requests.request("GET", url).json()
-                incidence = response['data'][data[key][0]]['history'][1]['weekIncidence'] - \
-                            response['data'][data[key][0]]['history'][0]['weekIncidence']
+                incidence = response['data'][data[key][0]]['history'][-1]['weekIncidence'] - \
+                            response['data'][data[key][0]]['history'][-2]['weekIncidence']
 
     if incidence > 0:
         text = emojize(":arrow_upper_right:", use_aliases=True) + str(round(incidence, 2))
