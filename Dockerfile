@@ -1,11 +1,13 @@
 FROM python:3.9.7
+ENV PYTHONUNBUFFERED=1
 
-ENV URL_MUC     url_muc
 ENV URL_RKI     url_rki
 ENV TOKEN       token
 
 COPY requirements.txt .
-COPY display.py .
+COPY helpers ./helpers
+COPY resources ./resources
+COPY main.py .
 COPY prepare_and_run.sh .
 COPY config.json .
 

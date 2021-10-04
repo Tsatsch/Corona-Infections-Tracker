@@ -1,2 +1,5 @@
 docker-compose.yml
 .idea/
+tester.py
+resources/
+helpers/__pycache__/
