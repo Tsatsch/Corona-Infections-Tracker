@@ -1,4 +1,4 @@
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler, ConversationHandler
 from helpers import telegram_bot as telegram
 import json
 
@@ -7,28 +7,34 @@ import json
 with open("config.json", "r") as f:
     config = json.load(f)
 
-if __name__ == '__main__':
+def main() -> None:
+    """Run the bot."""
     TOKEN = config["token"]
+    updater = Updater(TOKEN)
 
-    # create the updater, that will automatically create also a dispatcher and a queue to
-    updater = Updater(TOKEN, use_context=True)
     dispatcher = updater.dispatcher
 
-    # add handlers for start and help commands
-    dispatcher.add_handler(CommandHandler("start", telegram.start))
+    conv_handler = ConversationHandler(
+        entry_points=[CommandHandler('incidence', telegram.incidence)],
+        states={
+            telegram.CHOICE1: [MessageHandler(Filters.regex('^(States|Districts)$'), telegram.choise_state_or_district)],
+            telegram.CHOICE2: [MessageHandler(Filters.text, telegram.choise_particular)],
+        },
+        fallbacks=[CommandHandler('cancel', telegram.cancel)],
+    )
+
+    dispatcher.add_handler(conv_handler)
+
     dispatcher.add_handler(CommandHandler("help", telegram.help))
-    dispatcher.add_handler(CommandHandler("stand", telegram.get_stand))
     dispatcher.add_handler(CommandHandler("commands", telegram.get_commands))
-    dispatcher.add_handler(CommandHandler("inzidenz", telegram.inzidenz, pass_args=True))
     dispatcher.add_handler(CommandHandler("love", telegram.love))
+    dispatcher.add_handler(CommandHandler("start", telegram.start))
     dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, telegram.text))
-#     updater.dispatcher.add_handler(CallbackQueryHandler(telegram.data_gen))
 
-    # add error handling
-    dispatcher.add_error_handler(telegram.error)
-
-    # start bot
     updater.start_polling()
 
-    # run the bot until Ctrl-C
     updater.idle()
+
+
+if __name__ == '__main__':
+    main()

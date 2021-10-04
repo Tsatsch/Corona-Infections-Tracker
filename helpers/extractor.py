@@ -1,44 +1,58 @@
-import urllib.request as request
-import pandas as pd
-from pathlib import Path
-from helpers import data_parser
+import requests
+from emoji import emojize
 
 
-def download_rki(rki_excel_report_url):
-    # fake user agent of Chrome to download blub excel
-    fake_useragent = 'Chrome: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36'
+def extract_data_districts(base_url='https://api.corona-zahlen.org'):
+    url = base_url + '/districts'
+    keys_and_districts = {}  # {name : [key, week incidence, state, incidence compared to yesterday]}
+    response = requests.request("GET", url).json()
 
-    opener = request.build_opener()
-    opener.addheaders = [('User-Agent', fake_useragent)]
-    request.install_opener(opener)
-    request.urlretrieve(rki_excel_report_url, "./resources/rki_report.xlsx")
+    for key, value in response['data'].items():
+        keys_and_districts[value['name']] = [key, round(value['weekIncidence'], 2), value['state']]
+    return keys_and_districts
 
 
-def extract_data_from_rki(arr):
-    arr = [x.lower() for x in arr]
-    data_output = {}
-    rki_report = Path("./resources/rki_report.xlsx")
-    if not rki_report.is_file():
-        raise FileNotFoundError("rki_report.xlsx NOT FOUND, download it first!")
-    df = pd.read_excel('./resources/rki_report.xlsx', sheet_name=3)
+def extract_data_states(base_url='https://api.corona-zahlen.org'):
+    url = base_url + '/states'
+    keys_and_states = {}  # {name: [key, incidence]}
+    response = requests.request("GET", url).json()
+    for key, value in response['data'].items():
+        keys_and_states[value['name']] = [key, value['weekIncidence']]
+    return keys_and_states
 
-    first_col = df.iloc[:, 0]
-    requested_bundeslander = [item for item in data_parser.get_bundeslander() if item in arr]
 
-    searched_rows = []
-    for _, val in first_col.iteritems():
-        if 'stand' in arr:
-            if _ == 0:
-                data_output['stand'] = val
-        for blnd in requested_bundeslander:  # find bundeslander in excel and save their location
-            if type(val) == str:
-                if val.lower() == blnd:
-                    searched_rows.append(_)
+def retrieve_from_data(name, data):
+    text = ""
+    for key, value in data.items():
+        if key.lower() == name.lower():
+            text += f'{key} - {str(round(float(value[1]), 2))}'
+    if text == "":
+        text = f'Uf... I could not find the location. Check if you have a typo in \"{name}\"'
+    return text
 
-    for row_index in searched_rows:
-        bundesland = df.iloc[row_index][0]
-        aktuelle_inzidenz = df.iloc[row_index][-1]
-        tendenz = aktuelle_inzidenz - df.iloc[row_index][-2]
-        data_output[bundesland] = [round(aktuelle_inzidenz, 2), round(tendenz, 2)]
 
-    return data_output
+def get_incidence_diff(name, data):
+    base_url = "https://api.corona-zahlen.org"
+    incidence = 0
+
+    if len(data.keys()) == 16:
+        for key, value in data.items():
+            if key.lower() == name.lower():
+                url = base_url + f'/states/{data[key][0]}/history/incidence/2'
+                response = requests.request("GET", url).json()
+                incidence = response['data'][data[key][0]]['history'][1]['weekIncidence'] - \
+                            response['data'][data[key][0]]['history'][0]['weekIncidence']
+    else:
+        for key, value in data.items():
+            if key.lower() == name.lower():
+                url = base_url + f'/districts/{data[key][0]}/history/incidence/2'
+                response = requests.request("GET", url).json()
+                incidence = response['data'][data[key][0]]['history'][1]['weekIncidence'] - \
+                            response['data'][data[key][0]]['history'][0]['weekIncidence']
+
+    if incidence > 0:
+        text = emojize(":arrow_upper_right:", use_aliases=True) + str(round(incidence, 2))
+    else:
+        text = emojize(":arrow_lower_left:", use_aliases=True) + str(round(incidence*-1, 2))
+
+    return text
