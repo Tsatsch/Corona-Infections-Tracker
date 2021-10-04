@@ -18,7 +18,7 @@ def main() -> None:
         entry_points=[CommandHandler('incidence', telegram.incidence)],
         states={
             telegram.CHOICE1: [MessageHandler(Filters.regex('^(States|Districts)$'), telegram.choise_state_or_district)],
-            telegram.CHOICE2: [MessageHandler(Filters.text, telegram.choise_particular)],
+            telegram.CHOICE2: [MessageHandler(Filters.regex(' /^(?!my).*/'), telegram.choise_particular)],
         },
         fallbacks=[CommandHandler('cancel', telegram.cancel)],
     )

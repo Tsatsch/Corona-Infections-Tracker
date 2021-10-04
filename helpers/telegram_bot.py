@@ -82,7 +82,7 @@ def cancel(update: Update, context: CallbackContext) -> int:
     user = update.message.from_user
     logger.info("User %s canceled the conversation.", user.first_name)
     update.message.reply_text(
-        'Bye!', reply_markup=ReplyKeyboardRemove()
+        'Abort the mission!', reply_markup=ReplyKeyboardRemove()
     )
     return ConversationHandler.END
 
