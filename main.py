@@ -1,5 +1,5 @@
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
-from helpers import telegram
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler
+from helpers import telegram_bot as telegram
 import json
 
 
@@ -17,10 +17,12 @@ if __name__ == '__main__':
     # add handlers for start and help commands
     dispatcher.add_handler(CommandHandler("start", telegram.start))
     dispatcher.add_handler(CommandHandler("help", telegram.help))
-    dispatcher.add_handler(CommandHandler("stand", telegram.stand))
-    dispatcher.add_handler(CommandHandler("commands", telegram.commands))
+    dispatcher.add_handler(CommandHandler("stand", telegram.get_stand))
+    dispatcher.add_handler(CommandHandler("commands", telegram.get_commands))
     dispatcher.add_handler(CommandHandler("inzidenz", telegram.inzidenz, pass_args=True))
     dispatcher.add_handler(CommandHandler("love", telegram.love))
+    dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, telegram.text))
+#     updater.dispatcher.add_handler(CallbackQueryHandler(telegram.data_gen))
 
     # add error handling
     dispatcher.add_error_handler(telegram.error)

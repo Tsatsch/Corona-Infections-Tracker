@@ -1,24 +1,29 @@
 import json
 from pathlib import Path
-from helpers import data_parser
 from emoji import emojize
 from helpers import extractor
+import logging
 
 with open("config.json", "r") as f:
     config = json.load(f)
 
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
+)
+logger = logging.getLogger(__name__)
+
 
 def start(update, content):
     update.message.reply_text("Welcome, have a look at our available commands: \n")
-    commands(update, content)
+    get_commands(update, content)
 
 
 def help(update, content):
     update.message.reply_text("Heyho, have a look at our available commands: \n")
-    commands(update, content)
+    get_commands(update, content)
 
 
-def commands(update, content):
+def get_commands(update, content):
     answer = 'List of available commands: \n'
     answer += "/stand - Info wie aktuell die Datan sind\n"
     answer += "/commands - List all available commands\n"
@@ -28,7 +33,7 @@ def commands(update, content):
     update.message.reply_text(answer)
 
 
-def stand(update, content):
+def get_stand(update, content):
     rki_report = Path("resources/rki_report.xlsx")
     if not rki_report.is_file():
         extractor.download_rki(config['url_rki'])
@@ -68,7 +73,7 @@ def love(update, context):
 # function to handle normal text
 def text(update, context):
     text_received = update.message.text
-    update.message.reply_text(f'did you said "{text_received}" ?')
+    update.message.reply_text(f'Sorry, but for now the bot is too silly for a conversation, he can only run commands')
 
 
 # function to handle errors occured in the dispatcher
