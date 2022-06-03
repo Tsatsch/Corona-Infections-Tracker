@@ -8,6 +8,7 @@ from telegram.ext import (
     CallbackContext,
 )
 import helpers.extractor as ex
+from telegram.ext.dispatcher import run_async
 
 data = None
 
@@ -23,7 +24,7 @@ CHOICE1, CHOICE2 = range(2)
 with open("config.json", "r") as f:
     config = json.load(f)
 
-
+@run_async
 def incidence(update: Update, context: CallbackContext) -> int:
     reply_keyboard = [['States', 'Districts']]
     update.message.reply_text(
@@ -54,11 +55,11 @@ def choise_state_or_district(update: Update, context: CallbackContext) -> int:
         as_string = as_string.join(all_keys)
     else:
         as_string = 'München, Hamburg, Berlin Mitte, Köln, Frankfurt am Main usw. \nAlle ansehen: bit.ly/districts-de '
-    update.message.reply_text(
-        f'Oki-doki, please write a certain {update.message.text[:-1].lower()}. '
-        f'Here is a list of all {update.message.text[:-1].lower()}: \n\n'
-        f'{as_string}'
-    )
+    # update.message.reply_text(
+    #     f'Oki-doki, please write a certain {update.message.text[:-1].lower()}. '
+    #     f'Here is a list of all {update.message.text[:-1].lower()}: \n\n'
+    #     f'{as_string}'
+    # )
     return CHOICE2
 
 
@@ -90,7 +91,7 @@ def cancel(update: Update, context: CallbackContext) -> int:
 def love(update, context):
     user = update.message.from_user
     print(user)
-    if user['first_name'] == "Alexander":
+    if user['username'] == "ianamak":
         love_emoji = emojize(":heart:", use_aliases=True)
         update.message.reply_text(f'Love you {love_emoji}')
 
